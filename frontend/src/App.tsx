@@ -104,7 +104,7 @@ function App() {
             <Grid item xs={12} md={5}>
               <SettingsPanel
                 provider={provider}
-                onProviderChange={(val) => setProvider(val as 'openai' | 'gemini')}
+                onProviderChange={(val: string) => setProvider(val as 'openai' | 'gemini')}
                 openaiKey={openaiKey}
                 onOpenaiKeyChange={setOpenaiKey}
                 geminiKey={geminiKey}
