@@ -56,6 +56,10 @@ async def upload_file(
     gemini_api_key: str = Form(None)
 ):
     try:
+        # Log the incoming request
+        logger.info(f"Received upload request for file: {file.filename}")
+        logger.info(f"Provider: {provider}, Style: {style}")
+        
         # Validate file extension
         if not file.filename.endswith(('.ppt', '.pptx')):
             raise HTTPException(status_code=400, detail="Only PowerPoint files (.ppt, .pptx) are allowed")
