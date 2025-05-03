@@ -59,6 +59,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
         throw new Error(response.data?.detail || 'Server error occurred');
       }
 
+      if (!response.data || !response.data.results) {
+        throw new Error('Invalid response format from server');
+      }
+
       onUploadComplete(response.data);
     } catch (err) {
       let errorMessage = 'An error occurred during upload';
