@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv
+venv/
+ENV/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test files
+backend/test_files/
+
+# React/Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# System
+Thumbs.db
+
+# Misc
+*.sqlite3
+*.db
+
+# Ignore local config
+.env
+.env.* 
