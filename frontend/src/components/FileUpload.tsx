@@ -40,7 +40,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       } else if (provider === 'gemini') {
         formData.append('gemini_api_key', apiKey);
       }
-      const response = await axios.post('https://slides2text-backend.onrender.com', formData, {
+      const response = await axios.post('https://slides2text-backend.onrender.com/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
