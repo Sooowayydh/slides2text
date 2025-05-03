@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Divider } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Divider, Stack } from '@mui/material';
 import FileUpload from './components/FileUpload';
 import ResultsDisplay from './components/ResultsDisplay';
 import SettingsPanel from './components/SettingsPanel';
@@ -88,8 +87,8 @@ function App() {
               Transform your presentations into concise summaries
             </Typography>
           </Box>
-          <Grid container spacing={4} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={7}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mb: 4 }}>
+            <Box sx={{ width: { xs: '100%', md: '58.33%' } }}>
               <FileUpload
                 onUploadComplete={handleUploadComplete}
                 onError={handleError}
@@ -100,8 +99,8 @@ function App() {
               {error && (
                 <div style={{ marginTop: '1rem', color: '#d32f2f', fontWeight: 600 }}>{error}</div>
               )}
-            </Grid>
-            <Grid item xs={12} md={5}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', md: '41.67%' } }}>
               <SettingsPanel
                 provider={provider}
                 onProviderChange={(val: string) => setProvider(val as 'openai' | 'gemini')}
@@ -110,8 +109,8 @@ function App() {
                 geminiKey={geminiKey}
                 onGeminiKeyChange={setGeminiKey}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
           {results.length > 0 && <ResultsDisplay results={results} />}
           <Divider sx={{ my: 6, borderColor: '#A9B5DF' }} />
           <Box sx={{ textAlign: 'center', color: '#7886C7', fontSize: 15, mb: 2 }}>
