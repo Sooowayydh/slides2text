@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Grid, Divider } from '@mui/material'
+import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Divider } from '@mui/material'
+import Grid from '@mui/material/Grid'
 import FileUpload from './components/FileUpload'
 import ResultsDisplay from './components/ResultsDisplay'
 import SettingsPanel from './components/SettingsPanel'
@@ -103,7 +104,7 @@ function App() {
             <Grid item xs={12} md={5}>
               <SettingsPanel
                 provider={provider}
-                onProviderChange={setProvider}
+                onProviderChange={(val) => setProvider(val as 'openai' | 'gemini')}
                 openaiKey={openaiKey}
                 onOpenaiKeyChange={setOpenaiKey}
                 geminiKey={geminiKey}

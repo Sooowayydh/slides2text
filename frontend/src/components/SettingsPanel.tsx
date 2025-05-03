@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, RadioGroup, FormControlLabel, Radio, TextField, Paper } from '@mui/material';
+import { Typography, RadioGroup, FormControlLabel, Radio, TextField, Paper } from '@mui/material';
 
 interface SettingsPanelProps {
   provider: string;
