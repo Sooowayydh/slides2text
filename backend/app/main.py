@@ -43,6 +43,7 @@ class ProcessingRequest(BaseModel):
 processing_status: Dict[str, Dict] = {}
 
 @app.get("/")
+@app.post("/")
 async def root():
     return {"message": "PPT to Doc API is running"}
 
