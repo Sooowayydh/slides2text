@@ -44,10 +44,32 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 30000, // 30 second timeout
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accept all status codes less than 500
+        }
       });
+
+      if (response.status >= 400) {
+        throw new Error(response.data?.detail || 'Server error occurred');
+      }
+
       onUploadComplete(response.data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred during upload';
+      let errorMessage = 'An error occurred during upload';
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          errorMessage = err.response.data?.detail || err.response.statusText || 'Server error occurred';
+        } else if (err.request) {
+          errorMessage = 'No response received from server';
+        } else {
+          errorMessage = err.message;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
       setError(errorMessage);
       onError(errorMessage);
     } finally {
