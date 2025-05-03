@@ -3,8 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import { Box, Typography, CircularProgress, Alert, Button, Paper } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import axios from 'axios';
-import http from 'http';
-import https from 'https';
 
 interface FileUploadProps {
   onUploadComplete: (results: any) => void;
@@ -53,8 +51,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
         validateStatus: function (status) {
           return status >= 200 && status < 500; // Accept all status codes less than 500
         },
-        httpAgent: new (require('http').Agent)({ keepAlive: true }),
-        httpsAgent: new (require('https').Agent)({ keepAlive: true }),
         maxRedirects: 0,
         decompress: true
       });
