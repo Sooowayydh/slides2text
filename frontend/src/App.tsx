@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Divider } from '@mui/material'
-import Grid from '@mui/material/Grid'
-import FileUpload from './components/FileUpload'
-import ResultsDisplay from './components/ResultsDisplay'
-import SettingsPanel from './components/SettingsPanel'
+import { useState } from 'react';
+import { Container, CssBaseline, ThemeProvider, createTheme, Typography, Box, Divider } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import FileUpload from './components/FileUpload';
+import ResultsDisplay from './components/ResultsDisplay';
+import SettingsPanel from './components/SettingsPanel';
 
 const theme = createTheme({
   palette: {
@@ -30,37 +30,37 @@ const theme = createTheme({
   shape: {
     borderRadius: 18,
   },
-})
+});
 
 interface SlideResult {
-  slide: number
-  text: string
-  summary: string
+  slide: number;
+  text: string;
+  summary: string;
 }
 
 function App() {
-  const [results, setResults] = useState<SlideResult[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [provider, setProvider] = useState<'openai' | 'gemini'>('openai')
-  const [openaiKey, setOpenaiKey] = useState('')
-  const [geminiKey, setGeminiKey] = useState('')
+  const [results, setResults] = useState<SlideResult[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<'openai' | 'gemini'>('openai');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [geminiKey, setGeminiKey] = useState('');
 
   const handleUploadComplete = (data: any) => {
     if (data.status === 'success') {
-      setResults(data.results)
-      setError(null)
+      setResults(data.results);
+      setError(null);
     } else {
-      setError(data.message || 'An error occurred during processing')
+      setError(data.message || 'An error occurred during processing');
     }
-  }
+  };
 
   const handleError = (errorMessage: string) => {
-    setError(errorMessage)
-  }
+    setError(errorMessage);
+  };
 
   // Only enable upload if the correct API key is present
-  const apiKey = provider === 'openai' ? openaiKey : geminiKey
-  const canUpload = !!apiKey
+  const apiKey = provider === 'openai' ? openaiKey : geminiKey;
+  const canUpload = !!apiKey;
 
   return (
     <ThemeProvider theme={theme}>
@@ -120,8 +120,7 @@ function App() {
         </Container>
       </Box>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
-
+export default App;
