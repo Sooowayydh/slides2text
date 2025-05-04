@@ -45,15 +45,18 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json'
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 60000, // Increase timeout to 60 seconds
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
         validateStatus: function (status) {
           return status >= 200 && status < 500; // Accept all status codes less than 500
         },
         maxRedirects: 0,
-        decompress: true
+        decompress: true,
+        withCredentials: false // Disable credentials
       });
+
+      console.log('Response received:', response.data); // Add logging
 
       if (response.status >= 400) {
         throw new Error(response.data?.detail || 'Server error occurred');
@@ -65,12 +68,15 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
 
       onUploadComplete(response.data);
     } catch (err) {
+      console.error('Upload error:', err); // Add error logging
       let errorMessage = 'An error occurred during upload';
       if (axios.isAxiosError(err)) {
         if (err.response) {
           errorMessage = err.response.data?.detail || err.response.statusText || 'Server error occurred';
+          console.error('Server response:', err.response.data); // Add response logging
         } else if (err.request) {
           errorMessage = 'No response received from server';
+          console.error('No response received'); // Add request logging
         } else {
           errorMessage = err.message;
         }

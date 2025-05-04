@@ -30,19 +30,21 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://slides2text.vercel.app", "http://localhost:5173"],
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
     expose_headers=["*"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
 
-# Add middleware to force HTTP/1.1
+# Add middleware to handle response headers
 @app.middleware("http")
-async def force_http_1_1(request: Request, call_next):
+async def add_response_headers(request: Request, call_next):
     response = await call_next(request)
-    response.headers["Connection"] = "close"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Accept"
     return response
 
 class ProcessingRequest(BaseModel):
