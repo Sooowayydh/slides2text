@@ -13,6 +13,7 @@ import shutil
 import asyncio
 import logging
 import json
+import io
 
 from .utils import pptx_to_pdf, pdf_to_images, extract_text, summarize_openai, summarize_gemini
 from .config import settings
@@ -105,8 +106,15 @@ async def upload_file(
         processing_streams[job_id] = asyncio.Queue()
         logger.info(f"Created processing job with ID: {job_id}")
         
+        # Read and store file contents before starting background task
+        file_contents = await file.read()
+        file_copy = UploadFile(
+            filename=file.filename,
+            file=io.BytesIO(file_contents)
+        )
+        
         # Start processing in background
-        background_tasks.add_task(process_file_async, job_id, file, provider, style, openai_api_key, gemini_api_key)
+        background_tasks.add_task(process_file_async, job_id, file_copy, provider, style, openai_api_key, gemini_api_key)
         
         return {"job_id": job_id}
             
