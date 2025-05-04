@@ -60,10 +60,23 @@ async def upload_file(
         # Log the incoming request
         logger.info(f"Received upload request for file: {file.filename}")
         logger.info(f"Provider: {provider}, Style: {style}")
+        logger.info(f"File size: {file.size if hasattr(file, 'size') else 'unknown'} bytes")
         
         # Validate file extension
         if not file.filename.endswith(('.ppt', '.pptx')):
-            raise HTTPException(status_code=400, detail="Only PowerPoint files (.ppt, .pptx) are allowed")
+            error_msg = f"Invalid file type: {file.filename}. Only PowerPoint files (.ppt, .pptx) are allowed"
+            logger.error(error_msg)
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        # Validate API keys
+        if provider == "openai" and not openai_api_key:
+            error_msg = "OpenAI API key is required for OpenAI provider"
+            logger.error(error_msg)
+            raise HTTPException(status_code=400, detail=error_msg)
+        elif provider == "gemini" and not gemini_api_key:
+            error_msg = "Gemini API key is required for Gemini provider"
+            logger.error(error_msg)
+            raise HTTPException(status_code=400, detail=error_msg)
         
         # Generate a unique ID for this processing job
         job_id = str(int(time.time()))
@@ -73,6 +86,7 @@ async def upload_file(
             "message": "File uploaded, starting processing...",
             "results": []
         }
+        logger.info(f"Created processing job with ID: {job_id}")
         
         # Create temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -81,40 +95,55 @@ async def upload_file(
             
             # Save uploaded file
             file_path = temp_path / file.filename
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            logger.info(f"Saved uploaded file to: {file_path}")
+            try:
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
+                logger.info(f"Saved uploaded file to: {file_path}")
+            except Exception as e:
+                error_msg = f"Failed to save uploaded file: {str(e)}"
+                logger.error(error_msg)
+                raise HTTPException(status_code=500, detail=error_msg)
             
             # Convert PPTX to PDF
             pdf_dir = temp_path / "pdf"
             try:
+                logger.info(f"Starting PPTX to PDF conversion for {file_path}")
                 pdf_path = pptx_to_pdf(file_path, pdf_dir)
                 logger.info(f"Successfully converted to PDF: {pdf_path}")
             except Exception as e:
-                logger.error(f"Failed to convert PPTX to PDF: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Failed to convert PPTX to PDF: {str(e)}")
+                error_msg = f"Failed to convert PPTX to PDF: {str(e)}"
+                logger.error(error_msg)
+                raise HTTPException(status_code=500, detail=error_msg)
             
             # Convert PDF to images
             images_dir = temp_path / "images"
             try:
+                logger.info(f"Starting PDF to images conversion for {pdf_path}")
                 image_paths = pdf_to_images(pdf_path, images_dir)
                 logger.info(f"Successfully converted to {len(image_paths)} images")
             except Exception as e:
-                logger.error(f"Failed to convert PDF to images: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Failed to convert PDF to images: {str(e)}")
+                error_msg = f"Failed to convert PDF to images: {str(e)}"
+                logger.error(error_msg)
+                raise HTTPException(status_code=500, detail=error_msg)
             
             # Process each image
             results = []
+            total_slides = len(image_paths)
+            logger.info(f"Starting to process {total_slides} slides")
+            
             for i, image_path in enumerate(image_paths, 1):
                 try:
+                    logger.info(f"Processing slide {i}/{total_slides}")
+                    
                     # Extract text
                     text = extract_text(image_path)
                     logger.info(f"Extracted text from slide {i}")
                     
-                    # Summarize using OpenAI if API key is available
+                    # Summarize using selected provider
                     summary = ""
                     if provider == "gemini":
                         try:
+                            logger.info(f"Generating Gemini summary for slide {i}")
                             summary = summarize_gemini(
                                 text,
                                 gemini_api_key,
@@ -122,25 +151,33 @@ async def upload_file(
                             )
                             logger.info(f"Generated Gemini summary for slide {i}")
                         except Exception as e:
-                            logger.warning(f"Gemini summarization failed for slide {i}: {str(e)}")
+                            error_msg = f"Gemini summarization failed for slide {i}: {str(e)}"
+                            logger.warning(error_msg)
+                            summary = f"[Error: {error_msg}]"
                     else:
                         try:
+                            logger.info(f"Generating OpenAI summary for slide {i}")
                             summary = summarize_openai(text, openai_api_key)
                             logger.info(f"Generated OpenAI summary for slide {i}")
                         except Exception as e:
-                            logger.warning(f"OpenAI summarization failed for slide {i}: {str(e)}")
+                            error_msg = f"OpenAI summarization failed for slide {i}: {str(e)}"
+                            logger.warning(error_msg)
+                            summary = f"[Error: {error_msg}]"
                     
                     results.append({
                         "slide": i,
                         "text": text,
                         "summary": summary or "[No summary available]"
                     })
+                    logger.info(f"Completed processing slide {i}/{total_slides}")
+                    
                 except Exception as e:
-                    logger.error(f"Failed to process slide {i}: {str(e)}")
+                    error_msg = f"Failed to process slide {i}: {str(e)}"
+                    logger.error(error_msg)
                     results.append({
                         "slide": i,
                         "text": "[Error processing slide]",
-                        "summary": f"[Error: {str(e)}]"
+                        "summary": f"[Error: {error_msg}]"
                     })
             
             # Update final status
@@ -149,6 +186,7 @@ async def upload_file(
             processing_status[job_id]["message"] = "Processing completed successfully"
             processing_status[job_id]["results"] = results
             
+            logger.info(f"Processing completed successfully for job {job_id}")
             return JSONResponse(content={
                 "status": "success",
                 "progress": 100,
@@ -159,8 +197,9 @@ async def upload_file(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = f"Unexpected error: {str(e)}"
+        logger.error(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
