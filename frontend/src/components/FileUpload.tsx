@@ -44,6 +44,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
         headers: {
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
+          'Connection': 'close'
         },
         timeout: 30000, // 30 second timeout
         maxContentLength: Infinity,
@@ -52,7 +53,15 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
           return status >= 200 && status < 500; // Accept all status codes less than 500
         },
         maxRedirects: 0,
-        decompress: true
+        decompress: true,
+        httpAgent: new (require('http').Agent)({ 
+          keepAlive: false,
+          timeout: 30000
+        }),
+        httpsAgent: new (require('https').Agent)({ 
+          keepAlive: false,
+          timeout: 30000
+        })
       });
 
       if (response.status >= 400) {

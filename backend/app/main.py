@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -21,7 +21,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="PPT to Doc API",
     description="API for converting PowerPoint presentations to summarized documents",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None,  # Disable Swagger UI
+    redoc_url=None,  # Disable ReDoc
+    openapi_url=None  # Disable OpenAPI schema
 )
 
 # Configure CORS
@@ -34,6 +37,13 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
+
+# Add middleware to force HTTP/1.1
+@app.middleware("http")
+async def force_http_1_1(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Connection"] = "close"
+    return response
 
 class ProcessingRequest(BaseModel):
     provider: str = "openai"  # "openai" or "gemini"
