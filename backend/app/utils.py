@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 def pptx_to_pdf(pptx_path: Path, out_dir: Path) -> Path:
     """Convert PPTX to PDF using LibreOffice headless."""
     try:
+        # Check if LibreOffice is installed
+        result = subprocess.run(["which", "soffice"], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError("LibreOffice is not installed. Please install it using 'apt-get install libreoffice'")
+        
         # Create output directory if it doesn't exist
         out_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"Converting {pptx_path} to PDF in {out_dir}")

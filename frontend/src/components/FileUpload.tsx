@@ -43,8 +43,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       const response = await axios.post('https://slides2text-backend.onrender.com/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json',
-          'Connection': 'close'
+          'Accept': 'application/json'
         },
         timeout: 30000, // 30 second timeout
         maxContentLength: Infinity,
