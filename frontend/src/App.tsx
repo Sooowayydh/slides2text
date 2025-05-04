@@ -43,13 +43,15 @@ function App() {
   const [provider, setProvider] = useState<'openai' | 'gemini'>('openai');
   const [openaiKey, setOpenaiKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
+  const [processingStatus, setProcessingStatus] = useState<'processing' | 'success'>('processing');
 
   const handleUploadComplete = (data: any) => {
-    if (data.status === 'success') {
+    if (data.status === 'processing') {
       setResults(data.results);
-      setError(null);
-    } else {
-      setError(data.message || 'An error occurred during processing');
+      setProcessingStatus('processing');
+    } else if (data.status === 'success') {
+      setResults(data.results);
+      setProcessingStatus('success');
     }
   };
 
@@ -111,7 +113,9 @@ function App() {
               />
             </Box>
           </Stack>
-          {results.length > 0 && <ResultsDisplay results={results} />}
+          {results.length > 0 && (
+            <ResultsDisplay results={results} status={processingStatus} />
+          )}
           <Divider sx={{ my: 6, borderColor: '#A9B5DF' }} />
           <Box sx={{ textAlign: 'center', color: '#7886C7', fontSize: 15, mb: 2 }}>
             Made with ❤️ by Suved Ganduri &middot; <a href="https://github.com/yourrepo" style={{ color: '#2D336B', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">GitHub</a>

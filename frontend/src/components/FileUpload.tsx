@@ -40,43 +40,72 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       } else if (provider === 'gemini') {
         formData.append('gemini_api_key', apiKey);
       }
-      const response = await axios.post('https://slides2text-backend.onrender.com/upload', formData, {
+
+      // First, upload the file and get the job ID
+      const uploadResponse = await axios.post('https://slides2text-backend.onrender.com/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json'
         },
-        timeout: 60000, // Increase timeout to 60 seconds
+        timeout: 30000,
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
         validateStatus: function (status) {
-          return status >= 200 && status < 500; // Accept all status codes less than 500
+          return status >= 200 && status < 500;
         },
         maxRedirects: 0,
         decompress: true,
-        withCredentials: false // Disable credentials
+        withCredentials: false
       });
 
-      console.log('Response received:', response.data); // Add logging
-
-      if (response.status >= 400) {
-        throw new Error(response.data?.detail || 'Server error occurred');
+      if (uploadResponse.status >= 400) {
+        throw new Error(uploadResponse.data?.detail || 'Server error occurred');
       }
 
-      if (!response.data || !response.data.results) {
-        throw new Error('Invalid response format from server');
+      const { job_id } = uploadResponse.data;
+      if (!job_id) {
+        throw new Error('No job ID received from server');
       }
 
-      onUploadComplete(response.data);
+      // Set up EventSource to receive streaming results
+      const eventSource = new EventSource(`https://slides2text-backend.onrender.com/stream/${job_id}`);
+      const results: any[] = [];
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data === "DONE") {
+            eventSource.close();
+            setIsUploading(false);
+            onUploadComplete({ status: "success", results });
+          } else {
+            results.push(data);
+            // Update UI with new result
+            onUploadComplete({ status: "processing", results: [...results] });
+          }
+        } catch (err) {
+          console.error('Error parsing event data:', err);
+        }
+      };
+
+      eventSource.onerror = (err) => {
+        console.error('EventSource error:', err);
+        eventSource.close();
+        setIsUploading(false);
+        setError('Connection to server lost');
+        onError('Connection to server lost');
+      };
+
     } catch (err) {
-      console.error('Upload error:', err); // Add error logging
+      console.error('Upload error:', err);
       let errorMessage = 'An error occurred during upload';
       if (axios.isAxiosError(err)) {
         if (err.response) {
           errorMessage = err.response.data?.detail || err.response.statusText || 'Server error occurred';
-          console.error('Server response:', err.response.data); // Add response logging
+          console.error('Server response:', err.response.data);
         } else if (err.request) {
           errorMessage = 'No response received from server';
-          console.error('No response received'); // Add request logging
+          console.error('No response received');
         } else {
           errorMessage = err.message;
         }
@@ -85,7 +114,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       }
       setError(errorMessage);
       onError(errorMessage);
-    } finally {
       setIsUploading(false);
     }
   };
