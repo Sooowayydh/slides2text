@@ -9,6 +9,4 @@ google-generativeai==0.3.2
 python-dotenv==1.0.1
 pydantic==2.6.1
 pydantic-settings==2.1.0
-sse_starlette==1.8.2
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4 
+sse_starlette==1.8.2 
