@@ -53,15 +53,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
           return status >= 200 && status < 500; // Accept all status codes less than 500
         },
         maxRedirects: 0,
-        decompress: true,
-        httpAgent: new (require('http').Agent)({ 
-          keepAlive: false,
-          timeout: 30000
-        }),
-        httpsAgent: new (require('https').Agent)({ 
-          keepAlive: false,
-          timeout: 30000
-        })
+        decompress: true
       });
 
       if (response.status >= 400) {
