@@ -96,6 +96,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
           setIsUploading(false);
           setError('Connection to server lost');
           onError('Connection to server lost');
+        } else {
+          // If we have results, just close the connection
+          eventSource.close();
+          setIsUploading(false);
+          onUploadComplete({ status: "success", results });
         }
       };
 

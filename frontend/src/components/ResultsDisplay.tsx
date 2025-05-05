@@ -64,7 +64,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, status }) => {
           </Box>
         </Box>
       ))}
-      {status === 'processing' && (
+      {status === 'processing' && results.length > 0 && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
           <CircularProgress size={20} />
           <Typography variant="body2" color="primary">
