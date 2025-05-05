@@ -96,6 +96,7 @@ def extract_text(image_path: Path) -> str:
 def summarize_openai(text: str, api_key: str) -> str:
     """Summarize text using OpenAI's API."""
     try:
+        # Initialize OpenAI client with just the API key
         client = OpenAI(api_key=api_key)
         
         response = client.chat.completions.create(
