@@ -8,6 +8,7 @@ import google.generativeai as genai
 from typing import List, Tuple
 import logging
 import os
+from openai import OpenAI
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -92,22 +93,22 @@ def extract_text(image_path: Path) -> str:
         logger.error(f"Error in extract_text: {str(e)}")
         raise
 
-def summarize_openai(raw_text: str, api_key: str) -> str:
-    """Summarize extracted text via OpenAI GPT-3.5-Turbo."""
+def summarize_openai(text: str, api_key: str) -> str:
+    """Summarize text using OpenAI's API."""
     try:
-        if not raw_text:
-            return "[No text detected]"
+        client = OpenAI(api_key=api_key)
         
-        openai.api_key = api_key
-        prompt = (
-            "Below is OCR-extracted text from a slide. "
-            "Provide a concise 2-3 sentence summary focusing on key points:\n\n" + raw_text
-        )
-        resp = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role":"user","content":prompt}]
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that summarizes text concisely."},
+                {"role": "user", "content": f"Please summarize the following text concisely:\n\n{text}"}
+            ],
+            temperature=0.7,
+            max_tokens=150
         )
-        return resp.choices[0].message.content.strip()
+        
+        return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"Error in summarize_openai: {str(e)}")
         raise

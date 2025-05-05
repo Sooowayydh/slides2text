@@ -177,12 +177,10 @@ async def process_file_async(
             # Convert PPTX to PDF
             pdf_dir = temp_path / "pdf"
             pdf_path = pptx_to_pdf(file_path, pdf_dir)
-            logger.info(f"Successfully converted to PDF: {pdf_path}")
             
             # Convert PDF to images
             images_dir = temp_path / "images"
             image_paths = pdf_to_images(pdf_path, images_dir)
-            logger.info(f"Successfully converted to {len(image_paths)} images")
             
             # Process each image
             total_slides = len(image_paths)
