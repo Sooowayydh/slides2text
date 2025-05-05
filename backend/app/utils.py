@@ -96,8 +96,17 @@ def extract_text(image_path: Path) -> str:
 def summarize_openai(text: str, api_key: str) -> str:
     """Summarize text using OpenAI's API."""
     try:
-        # Initialize OpenAI client with just the API key
-        client = OpenAI(api_key=api_key)
+        # Log the API key (first few characters only for security)
+        logger.debug(f"Initializing OpenAI client with API key: {api_key[:5]}...")
+        
+        # Initialize OpenAI client with explicit configuration
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.openai.com/v1",
+            timeout=30.0
+        )
+        
+        logger.debug("OpenAI client initialized successfully")
         
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -112,6 +121,8 @@ def summarize_openai(text: str, api_key: str) -> str:
         return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"Error in summarize_openai: {str(e)}")
+        # Log the full error for debugging
+        logger.error(f"Full error details: {str(e.__dict__)}")
         raise
 
 def summarize_gemini(raw_text: str, api_key: str, model: str) -> str:

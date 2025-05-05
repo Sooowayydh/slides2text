@@ -19,7 +19,10 @@ from .utils import pptx_to_pdf, pdf_to_images, extract_text, summarize_openai, s
 from .config import settings
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
