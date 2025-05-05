@@ -8,7 +8,6 @@ import google.generativeai as genai
 from typing import List, Tuple
 import logging
 import os
-from openai import OpenAI
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -109,37 +108,25 @@ def check_openai_environment():
 def summarize_openai(text: str, api_key: str) -> str:
     """Summarize text using OpenAI's API."""
     try:
-        # Check environment variables
-        check_openai_environment()
+        # Set the API key directly
+        openai.api_key = api_key
         
-        # Log the API key (first few characters only for security)
-        logger.debug(f"Initializing OpenAI client with API key: {api_key[:5]}...")
-        
-        # Initialize OpenAI client with minimal configuration
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.openai.com/v1",
-            timeout=30.0,
-            http_client=None  # Force no proxy settings
+        if not text:
+            return "[No text detected]"
+            
+        prompt = (
+            "Below is OCR-extracted text from a slide. "
+            "Provide a concise 2-3 sentence summary focusing on key points:\n\n" + text
         )
         
-        logger.debug("OpenAI client initialized successfully")
-        
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes text concisely."},
-                {"role": "user", "content": f"Please summarize the following text concisely:\n\n{text}"}
-            ],
-            temperature=0.7,
-            max_tokens=150
+            messages=[{"role": "user", "content": prompt}]
         )
         
         return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"Error in summarize_openai: {str(e)}")
-        # Log the full error for debugging
-        logger.error(f"Full error details: {str(e.__dict__)}")
         raise
 
 def summarize_gemini(raw_text: str, api_key: str, model: str) -> str:
