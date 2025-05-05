@@ -93,17 +93,34 @@ def extract_text(image_path: Path) -> str:
         logger.error(f"Error in extract_text: {str(e)}")
         raise
 
+def check_openai_environment():
+    """Check environment variables that might affect OpenAI client."""
+    env_vars = [
+        'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY',
+        'OPENAI_API_BASE', 'OPENAI_API_TYPE', 'OPENAI_API_VERSION',
+        'OPENAI_ORGANIZATION', 'OPENAI_PROXY'
+    ]
+    
+    for var in env_vars:
+        value = os.environ.get(var)
+        if value:
+            logger.warning(f"Environment variable {var} is set: {value}")
+
 def summarize_openai(text: str, api_key: str) -> str:
     """Summarize text using OpenAI's API."""
     try:
+        # Check environment variables
+        check_openai_environment()
+        
         # Log the API key (first few characters only for security)
         logger.debug(f"Initializing OpenAI client with API key: {api_key[:5]}...")
         
-        # Initialize OpenAI client with explicit configuration
+        # Initialize OpenAI client with minimal configuration
         client = OpenAI(
             api_key=api_key,
             base_url="https://api.openai.com/v1",
-            timeout=30.0
+            timeout=30.0,
+            http_client=None  # Force no proxy settings
         )
         
         logger.debug("OpenAI client initialized successfully")
