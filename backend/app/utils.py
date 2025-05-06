@@ -140,12 +140,37 @@ def summarize_gemini(raw_text: str, api_key: str, model: str) -> str:
         if not raw_text:
             return "[No text detected]"
         
-        model_instance = genai.GenerativeModel(model)
+        # Initialize the model with the correct name
+        model_instance = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
+        
         prompt = (
             "Below is OCR-extracted text from a slide. "
             "Provide a concise 2-3 sentence summary focusing on key points:\n\n" + raw_text
         )
-        response = model_instance.generate_content(prompt)
+        
+        # Generate content with safety settings
+        response = model_instance.generate_content(
+            prompt,
+            safety_settings=[
+                {
+                    "category": "HARM_CATEGORY_HARASSMENT",
+                    "threshold": "BLOCK_NONE"
+                },
+                {
+                    "category": "HARM_CATEGORY_HATE_SPEECH",
+                    "threshold": "BLOCK_NONE"
+                },
+                {
+                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    "threshold": "BLOCK_NONE"
+                },
+                {
+                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    "threshold": "BLOCK_NONE"
+                }
+            ]
+        )
+        
         return response.text.strip()
     except Exception as e:
         logger.error(f"Error in summarize_gemini: {str(e)}")
