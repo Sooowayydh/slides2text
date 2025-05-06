@@ -42,7 +42,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       }
 
       // First, upload the file and get the job ID
-      const uploadResponse = await axios.post('http://localhost:8000/upload', formData, {
+      const uploadResponse = await axios.post('https://slides2text-backend.onrender.com/upload', formData, {
+      // const uploadResponse = await axios.post('http://localhost:8000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json'
@@ -68,7 +69,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onError, prov
       }
 
       // Set up EventSource to receive streaming results
-      const eventSource = new EventSource(`http://localhost:8000/stream/${job_id}`);
+      const eventSource = new EventSource(`https://slides2text-backend.onrender.com/stream/${job_id}`);
+      // const eventSource = new EventSource(`http://localhost:8000/stream/${job_id}`);
       const results: any[] = [];
 
       eventSource.onmessage = (event) => {
