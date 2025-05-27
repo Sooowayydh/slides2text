@@ -105,9 +105,12 @@ def summarize_openai(image_path: Path, api_key: str) -> str:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
         
         prompt = (
-            "This is a slide from a presentation. Please analyze the visual content and text, "
-            "and provide a concise 2-3 sentence summary focusing on the key points. "
-            "Consider both the text content and any visual elements like diagrams, charts, or images."
+            "You are an expert AI assistant tasked with converting PowerPoint slides into semantically rich text for downstream use. "
+            "Carefully observe the content of each slide and accurately transcribe all text present. "
+            "Provide detailed descriptions of any graphs, charts, figures, or other visual elements. "
+            "It is essential to ensure accuracy and completeness in your text-based representation of the slide. "
+            "Where possible, include interpretations of graphics, icons, and other non-text descriptors. "
+            "Return only the text content of the slide, without any preamble, explanation, or unrelated information."
         )
         
         response = openai.ChatCompletion.create(
@@ -126,7 +129,7 @@ def summarize_openai(image_path: Path, api_key: str) -> str:
                     ]
                 }
             ],
-            max_tokens=300
+            max_completion_tokens=1000
         )
         
         return response.choices[0].message.content.strip()

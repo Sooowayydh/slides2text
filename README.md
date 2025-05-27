@@ -1,6 +1,46 @@
-# PPT to Doc Converter
+# PPT2Doc
 
-A web application that converts PowerPoint presentations into summarized documents using AI. The application supports both OpenAI and Google Gemini AI models for generating summaries.
+A web application that converts PowerPoint presentations into detailed text documents using AI vision models.
+
+## Purpose
+
+PPT2Doc solves the challenge of converting PowerPoint presentations into text-based formats that can be effectively processed by language models and other text-based systems. While PowerPoint is excellent for visual storytelling and human audiences, its content is difficult to process through traditional text scraping methods because:
+
+- Slides often contain minimal text, relying on visual elements to convey information
+- Charts, graphs, and visual elements lose their semantic meaning when converted to plain text
+- Traditional text extraction misses the rich context and relationships between visual elements
+- The format is not ideal for retrieval augmented generation (RAG) systems that primarily work with text
+
+PPT2Doc bridges this gap by using AI vision models to:
+- Accurately transcribe all text content from slides
+- Provide detailed descriptions of visual elements like charts and graphs
+- Preserve the semantic relationships between different elements
+- Generate text that maintains the original meaning and context
+
+## Pipeline
+
+1. **Input**: User uploads a PowerPoint (.pptx) file
+2. **Processing**:
+   - PowerPoint is converted to PDF using LibreOffice
+   - PDF is converted to individual PNG images (one per slide)
+   - Each slide image is processed by AI vision model (OpenAI o4-mini or Google Gemini)
+   - AI model transcribes text and describes visual elements
+3. **Output**: Generated text document containing transcribed content from all slides
+
+## Tech Stack
+
+### Frontend
+- React with TypeScript
+- Tailwind CSS for styling
+- Vite for build tooling
+
+### Backend
+- FastAPI (Python)
+- OpenAI API (o4-mini model)
+- Google Gemini API
+- LibreOffice for PPTX to PDF conversion
+- pdf2image for PDF to PNG conversion
+- Docker for containerization
 
 ## Features
 
@@ -13,123 +53,5 @@ A web application that converts PowerPoint presentations into summarized documen
 - Modern, responsive UI
 - Support for both concise and detailed summaries
 
-## Tech Stack
-
-### Frontend
-- React
-- Material-UI
-- TypeScript
-- Axios for API calls
-- React Dropzone for file uploads
-
-### Backend
-- FastAPI
-- Python 3.11
-- OpenAI API (v0.28.0)
-- Google Gemini AI API
-- LibreOffice for PPT to PDF conversion
-- Tesseract OCR for text extraction
-- PDF2Image for PDF processing
-
-## Prerequisites
-
-- Node.js and npm (for frontend)
-- Python 3.11 (for backend)
-- LibreOffice
-- Tesseract OCR
-- Poppler Utils
-
-## Local Development Setup
-
-### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Start the backend server:
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-## Docker Deployment
-
-### Backend
-
-1. Build the Docker image:
-   ```bash
-   cd backend
-   docker build -t ppt2doc-backend .
-   ```
-
-2. Run the container:
-   ```bash
-   docker run -p 8000:8000 ppt2doc-backend
-   ```
-
-## Environment Variables
-
-### Backend
-Create a `.env` file in the backend directory with:
-```
-OPENAI_API_KEY=your_openai_api_key
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-### Frontend
-Create a `.env` file in the frontend directory with:
-```
-REACT_APP_API_URL=http://localhost:8000
-```
-
-## API Endpoints
-
-- `POST /upload`: Upload a PowerPoint file
-  - Parameters:
-    - `file`: PowerPoint file (.ppt, .pptx)
-    - `provider`: "openai" or "gemini"
-    - `style`: "concise" or "detailed"
-    - `openai_api_key`: OpenAI API key (if using OpenAI)
-    - `gemini_api_key`: Gemini API key (if using Gemini)
-
-- `GET /status/{job_id}`: Check processing status
-- `GET /stream/{job_id}`: Stream processing results
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 
