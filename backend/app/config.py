@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
     
     # Models
-    OPENAI_MODEL: str = "gpt-3.5-turbo"
-    GEMINI_MODEL: str = "gemini-pro"
+    OPENAI_MODEL: str = "o4-mini"
+    GEMINI_MODEL: str = "gemini-2.5-flash-preview-04-17"
     
     # Other settings
     MAX_TOKENS: int = 150

@@ -2,12 +2,12 @@ import subprocess
 from pathlib import Path
 from pdf2image import convert_from_path
 from PIL import Image
-import pytesseract
 import openai
 import google.generativeai as genai
 from typing import List, Tuple
 import logging
 import os
+import base64
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -81,17 +81,6 @@ def pdf_to_images(pdf_path: Path, out_dir: Path) -> List[Path]:
         logger.error(f"Error in pdf_to_images: {str(e)}")
         raise
 
-def extract_text(image_path: Path) -> str:
-    """Use Tesseract OCR to extract text from a slide image."""
-    try:
-        img = Image.open(image_path)
-        text = pytesseract.image_to_string(img).strip()
-        logger.info(f"Extracted text from {image_path}")
-        return text
-    except Exception as e:
-        logger.error(f"Error in extract_text: {str(e)}")
-        raise
-
 def check_openai_environment():
     """Check environment variables that might affect OpenAI client."""
     env_vars = [
@@ -105,23 +94,39 @@ def check_openai_environment():
         if value:
             logger.warning(f"Environment variable {var} is set: {value}")
 
-def summarize_openai(text: str, api_key: str) -> str:
-    """Summarize text using OpenAI's API."""
+def summarize_openai(image_path: Path, api_key: str) -> str:
+    """Summarize slide content using OpenAI's o4-mini model."""
     try:
         # Set the API key directly
         openai.api_key = api_key
         
-        if not text:
-            return "[No text detected]"
-            
+        # Load and encode the image
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+        
         prompt = (
-            "Below is OCR-extracted text from a slide. "
-            "Provide a concise 2-3 sentence summary focusing on key points:\n\n" + text
+            "This is a slide from a presentation. Please analyze the visual content and text, "
+            "and provide a concise 2-3 sentence summary focusing on the key points. "
+            "Consider both the text content and any visual elements like diagrams, charts, or images."
         )
         
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
+            model="o4-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=300
         )
         
         return response.choices[0].message.content.strip()
@@ -129,28 +134,29 @@ def summarize_openai(text: str, api_key: str) -> str:
         logger.error(f"Error in summarize_openai: {str(e)}")
         raise
 
-def summarize_gemini(raw_text: str, api_key: str, model: str) -> str:
-    """Summarize extracted text via Google Gemini API."""
+def summarize_gemini(image_path: Path, api_key: str, model: str) -> str:
+    """Summarize slide content using Google Gemini's vision capabilities."""
     try:
         if not api_key:
             raise ValueError("GEMINI_API_KEY not set")
         
         genai.configure(api_key=api_key)
         
-        if not raw_text:
-            return "[No text detected]"
+        # Initialize the model
+        model_instance = genai.GenerativeModel(model)
         
-        # Initialize the model with the correct name
-        model_instance = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
+        # Load the image
+        image = Image.open(image_path)
         
         prompt = (
-            "Below is OCR-extracted text from a slide. "
-            "Provide a concise 2-3 sentence summary focusing on key points:\n\n" + raw_text
+            "This is a slide from a presentation. Please analyze the visual content and text, "
+            "and provide a concise 2-3 sentence summary focusing on the key points. "
+            "Consider both the text content and any visual elements like diagrams, charts, or images."
         )
         
-        # Generate content with safety settings
+        # Generate content with the image
         response = model_instance.generate_content(
-            prompt,
+            [prompt, image],
             safety_settings=[
                 {
                     "category": "HARM_CATEGORY_HARASSMENT",

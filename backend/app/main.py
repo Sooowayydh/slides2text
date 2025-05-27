@@ -15,7 +15,7 @@ import logging
 import json
 import io
 
-from .utils import pptx_to_pdf, pdf_to_images, extract_text, summarize_openai, summarize_gemini
+from .utils import pptx_to_pdf, pdf_to_images, summarize_openai, summarize_gemini
 from .config import settings
 
 # Set up logging
@@ -74,12 +74,13 @@ async def upload_file(
     provider: str = Form("openai"),
     style: str = Form("concise"),
     openai_api_key: str = Form(None),
-    gemini_api_key: str = Form(None)
+    gemini_api_key: str = Form(None),
+    model: str = Form(None)  # Add model parameter
 ):
     try:
         # Log the incoming request
         logger.info(f"Received upload request for file: {file.filename}")
-        logger.info(f"Provider: {provider}, Style: {style}")
+        logger.info(f"Provider: {provider}, Style: {style}, Model: {model}")
         logger.info(f"File size: {file.size if hasattr(file, 'size') else 'unknown'} bytes")
         
         # Validate file extension
@@ -117,7 +118,7 @@ async def upload_file(
         )
         
         # Start processing in background
-        background_tasks.add_task(process_file_async, job_id, file_copy, provider, style, openai_api_key, gemini_api_key)
+        background_tasks.add_task(process_file_async, job_id, file_copy, provider, style, openai_api_key, gemini_api_key, model)
         
         return {"job_id": job_id}
             
@@ -164,7 +165,8 @@ async def process_file_async(
     provider: str,
     style: str,
     openai_api_key: str,
-    gemini_api_key: str
+    gemini_api_key: str,
+    model: str
 ):
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -189,20 +191,15 @@ async def process_file_async(
             total_slides = len(image_paths)
             for i, image_path in enumerate(image_paths, 1):
                 try:
-                    # Extract text
-                    text = extract_text(image_path)
-                    logger.info(f"Extracted text from slide {i}")
-                    
                     # Summarize using selected provider
                     summary = ""
                     if provider == "gemini":
-                        summary = summarize_gemini(text, gemini_api_key, settings.GEMINI_MODEL)
+                        summary = summarize_gemini(image_path, gemini_api_key, model)
                     else:
-                        summary = summarize_openai(text, openai_api_key)
+                        summary = summarize_openai(image_path, openai_api_key)
                     
                     result = {
                         "slide": i,
-                        "text": text,
                         "summary": summary or "[No summary available]"
                     }
                     
@@ -215,7 +212,6 @@ async def process_file_async(
                     logger.error(error_msg)
                     await processing_streams[job_id].put({
                         "slide": i,
-                        "text": "[Error processing slide]",
                         "summary": f"[Error: {error_msg}]"
                     })
             

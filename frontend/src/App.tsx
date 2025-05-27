@@ -44,6 +44,13 @@ function App() {
   const [openaiKey, setOpenaiKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
   const [processingStatus, setProcessingStatus] = useState<'processing' | 'success'>('processing');
+  const [model, setModel] = useState('o4-mini');
+
+  const handleProviderChange = (newProvider: string) => {
+    setProvider(newProvider as 'openai' | 'gemini');
+    // Update model based on provider
+    setModel(newProvider === 'openai' ? 'o4-mini' : 'gemini-2.5-flash-preview-04-17');
+  };
 
   const handleUploadComplete = (data: any) => {
     if (data.status === 'processing') {
@@ -97,6 +104,7 @@ function App() {
                 provider={provider}
                 apiKey={apiKey}
                 canUpload={canUpload}
+                model={model}
               />
               {error && (
                 <div style={{ marginTop: '1rem', color: '#d32f2f', fontWeight: 600 }}>{error}</div>
@@ -105,11 +113,13 @@ function App() {
             <Box sx={{ width: { xs: '100%', md: '41.67%' } }}>
               <SettingsPanel
                 provider={provider}
-                onProviderChange={(val: string) => setProvider(val as 'openai' | 'gemini')}
+                onProviderChange={handleProviderChange}
                 openaiKey={openaiKey}
                 onOpenaiKeyChange={setOpenaiKey}
                 geminiKey={geminiKey}
                 onGeminiKeyChange={setGeminiKey}
+                model={model}
+                onModelChange={setModel}
               />
             </Box>
           </Stack>
@@ -118,7 +128,7 @@ function App() {
           )}
           <Divider sx={{ my: 6, borderColor: '#A9B5DF' }} />
           <Box sx={{ textAlign: 'center', color: '#7886C7', fontSize: 15, mb: 2 }}>
-            Made with ❤️ by Suved Ganduri &middot; <a href="https://github.com/yourrepo" style={{ color: '#2D336B', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">GitHub</a>
+            Made with ❤️ by Suved Ganduri &middot; <a href="https://github.com/Sooowayydh/slides2text" style={{ color: '#2D336B', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">GitHub</a>
           </Box>
         </Container>
       </Box>
