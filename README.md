@@ -1,10 +1,10 @@
-# PPT2Doc
+# SLIDE SUMMARIZER
 
 A web application that converts PowerPoint presentations into detailed text documents using AI vision models.
 
 ## Purpose
 
-PPT2Doc solves the challenge of converting PowerPoint presentations into text-based formats that can be effectively processed by language models and other text-based systems. While PowerPoint is excellent for visual storytelling and human audiences, its content is difficult to process through traditional text scraping methods because:
+Slide Summarizer solves the challenge of converting PowerPoint presentations into text-based formats that can be effectively processed by language models and other text-based systems. While PowerPoint is excellent for visual storytelling and human audiences, its content is difficult to process through traditional text scraping methods because:
 
 - Slides often contain minimal text, relying on visual elements to convey information
 - Charts, graphs, and visual elements lose their semantic meaning when converted to plain text
