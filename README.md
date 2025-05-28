@@ -27,6 +27,8 @@ PPT2Doc bridges this gap by using AI vision models to:
    - AI model transcribes text and describes visual elements
 3. **Output**: Generated text document containing transcribed content from all slides
 
+![PPT2Doc Pipeline](assets/pipeline.png)
+
 ## Tech Stack
 
 ### Frontend
